@@ -24,6 +24,25 @@
     const modalImgEl = document.getElementById('modalPhoto');
     let modalPhotoIndex = 0;
 
+    // Booking modal elements
+    const bookingModalEl = document.getElementById('bookingModal');
+    const bookingFormEl = document.getElementById('bookingForm');
+    const bookPropertyBtn = document.getElementById('bookPropertyBtn');
+    const bookingPropertyInfoEl = document.getElementById('bookingPropertyInfo');
+    const summaryPropertyNameEl = document.getElementById('summaryPropertyName');
+    const summaryPriceEl = document.getElementById('summaryPrice');
+    const summaryTotalEl = document.getElementById('summaryTotal');
+    let currentBookingProperty = null;
+
+    // Map and view elements
+    const listViewBtn = document.getElementById('listViewBtn');
+    const mapViewBtn = document.getElementById('mapViewBtn');
+    const mapContainerEl = document.getElementById('mapContainer');
+    const mapEl = document.getElementById('map');
+    let currentView = 'list';
+    let map = null;
+    let markers = [];
+
     if (yearEl) {
         yearEl.textContent = String(new Date().getFullYear());
     }
@@ -166,6 +185,7 @@
         }
 
         renderCards(filtered);
+        updateMapMarkers(filtered);
     }
 
     function renderCards(items) {
@@ -187,9 +207,17 @@
                     <div class="name">${p.name}</div>
                     <div class="meta">${p.address}${p.rating ? ` · ⭐ ${p.rating.toFixed(1)}` : ''}</div>
                     <div class="meta details-row"><span class="price">KSh ${formatPrice(p.price)}</span><span class="beds">${p.beds} beds</span><span class="baths">${p.baths} baths</span></div>
+                    <div class="card-actions">
+                        <button class="btn primary small" data-book-property="${p.id}">Book Now</button>
+                    </div>
                 </div>
             `;
-            card.addEventListener('click', () => openDetailModal(p));
+            card.addEventListener('click', (e) => {
+                // Don't open modal if clicking on booking button
+                if (!e.target.closest('[data-book-property]')) {
+                    openDetailModal(p);
+                }
+            });
             cardsEl.appendChild(card);
         }
     }
@@ -291,6 +319,273 @@
         if (!modalEl) return;
         modalEl.setAttribute('aria-hidden', 'true');
     }
+
+    // Booking functionality
+    function openBookingModal(property) {
+        if (!bookingModalEl) return;
+        currentBookingProperty = property;
+        
+        // Set property info in booking modal
+        bookingPropertyInfoEl.textContent = `${property.name} - ${property.address}`;
+        summaryPropertyNameEl.textContent = property.name;
+        summaryPriceEl.textContent = `KSh ${formatPrice(property.price)}/month`;
+        
+        // Calculate estimated total (assuming 1 month for now)
+        const total = property.price;
+        summaryTotalEl.textContent = `KSh ${formatPrice(total)}`;
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkIn').min = today;
+        document.getElementById('checkOut').min = today;
+        
+        // Reset form
+        bookingFormEl.reset();
+        
+        // Show modal
+        bookingModalEl.setAttribute('aria-hidden', 'false');
+        
+        // Add event listeners for close buttons
+        const closeEls = bookingModalEl.querySelectorAll('[data-close]');
+        const onClose = () => closeBookingModal();
+        closeEls.forEach(el => el.addEventListener('click', onClose, { once: true }));
+        document.addEventListener('keydown', escToClose, { once: true });
+        
+        function escToClose(e) { if (e.key === 'Escape') onClose(); }
+    }
+
+    function closeBookingModal() {
+        if (!bookingModalEl) return;
+        bookingModalEl.setAttribute('aria-hidden', 'true');
+        currentBookingProperty = null;
+    }
+
+    function handleBookingSubmit(e) {
+        e.preventDefault();
+        
+        if (!currentBookingProperty) return;
+        
+        const formData = new FormData(bookingFormEl);
+        const bookingData = {
+            property: currentBookingProperty,
+            guestName: formData.get('guestName'),
+            guestEmail: formData.get('guestEmail'),
+            guestPhone: formData.get('guestPhone'),
+            checkIn: formData.get('checkIn'),
+            checkOut: formData.get('checkOut'),
+            guests: formData.get('guests'),
+            specialRequests: formData.get('specialRequests'),
+            bookingDate: new Date().toISOString(),
+            status: 'pending'
+        };
+        
+        // Validate dates
+        const checkInDate = new Date(bookingData.checkIn);
+        const checkOutDate = new Date(bookingData.checkOut);
+        
+        if (checkOutDate <= checkInDate) {
+            alert('Check-out date must be after check-in date');
+            return;
+        }
+        
+        // Calculate total cost
+        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+        const monthlyRate = currentBookingProperty.price;
+        const totalCost = Math.ceil((nights / 30) * monthlyRate); // Rough calculation
+        
+        // Show confirmation
+        const confirmed = confirm(`Confirm booking for ${currentBookingProperty.name}?\n\nGuest: ${bookingData.guestName}\nCheck-in: ${bookingData.checkIn}\nCheck-out: ${bookingData.checkOut}\nTotal: KSh ${formatPrice(totalCost)}`);
+        
+        if (confirmed) {
+            // In a real application, you would send this data to your backend
+            console.log('Booking submitted:', bookingData);
+            
+            // Show success message
+            alert('Booking request submitted successfully! We will contact you soon to confirm your reservation.');
+            
+            // Close modal
+            closeBookingModal();
+        }
+    }
+
+    // Map and view functionality
+    function initMap() {
+        if (!mapEl) {
+            console.log('Map element not found');
+            return;
+        }
+        
+        if (typeof L === 'undefined') {
+            console.log('Leaflet not loaded');
+            mapEl.innerHTML = '<div class="map-fallback"><div class="map-message"><div class="map-icon">🗺️</div><h3>Map Loading...</h3><p>Please wait while the map loads</p></div></div>';
+            return;
+        }
+        
+        console.log('Initializing map...');
+        
+        // Initialize Leaflet map centered on Murang'a, Kenya
+        const murangaCoords = [-0.7200, 37.1500]; // Murang'a coordinates
+        map = L.map('map').setView(murangaCoords, 13);
+        
+        // Add OpenStreetMap tiles with dark theme
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
+        
+        console.log('Map initialized successfully');
+        
+        // Add property markers
+        addPropertyMarkers(properties);
+        
+        // Add map info overlay
+        const mapInfo = L.control({position: 'bottomleft'});
+        mapInfo.onAdd = function() {
+            const div = L.DomUtil.create('div', 'map-info-overlay');
+            div.innerHTML = '📍 Click on markers to view property details';
+            return div;
+        };
+        mapInfo.addTo(map);
+    }
+    
+    function addPropertyMarkers(properties) {
+        if (!map) return;
+        
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        properties.forEach(property => {
+            if (property.coordinates) {
+                // Create custom marker icon
+                const markerIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `
+                        <div class="marker-pin">
+                            <div class="marker-icon">🏠</div>
+                            <div class="marker-price">KSh ${formatPrice(property.price)}</div>
+                        </div>
+                    `,
+                    iconSize: [60, 40],
+                    iconAnchor: [30, 40],
+                    popupAnchor: [0, -40]
+                });
+                
+                // Create marker
+                const marker = L.marker([property.coordinates.lat, property.coordinates.lng], {
+                    icon: markerIcon,
+                    propertyId: property.id
+                }).addTo(map);
+                
+                // Add popup with property info
+                marker.bindPopup(`
+                    <div class="map-popup">
+                        <h3>${property.name}</h3>
+                        <p class="popup-address">${property.address}</p>
+                        <p class="popup-price">KSh ${formatPrice(property.price)}/month</p>
+                        <p class="popup-details">${property.beds} beds • ${property.baths} baths</p>
+                        <button class="popup-btn" onclick="window.openPropertyDetails('${property.id}')">
+                            View Details
+                        </button>
+                    </div>
+                `);
+                
+                markers.push(marker);
+            }
+        });
+    }
+    
+    // Global function for popup buttons
+    window.openPropertyDetails = function(propertyId) {
+        const property = properties.find(p => p.id === propertyId);
+        if (property) {
+            openDetailModal(property);
+        }
+    };
+
+    function switchView(view) {
+        currentView = view;
+        
+        if (view === 'list') {
+            cardsEl.style.display = 'grid';
+            mapContainerEl.style.display = 'none';
+            listViewBtn.classList.add('active');
+            mapViewBtn.classList.remove('active');
+        } else if (view === 'map') {
+            cardsEl.style.display = 'none';
+            mapContainerEl.style.display = 'block';
+            listViewBtn.classList.remove('active');
+            mapViewBtn.classList.add('active');
+            
+            // Initialize map if not already done
+            if (!map) {
+                // Small delay to ensure container is visible
+                setTimeout(() => {
+                    initMap();
+                }, 100);
+            }
+        }
+    }
+
+    function updateMapMarkers(filteredProperties) {
+        if (!map || currentView !== 'map') return;
+        
+        // Update markers based on filtered properties
+        markers.forEach(marker => {
+            const propertyId = marker.options.propertyId;
+            const isVisible = filteredProperties.some(p => p.id === propertyId);
+            
+            if (isVisible) {
+                map.addLayer(marker);
+            } else {
+                map.removeLayer(marker);
+            }
+        });
+    }
+
+    // Add view toggle event listeners
+    if (listViewBtn) {
+        listViewBtn.addEventListener('click', () => switchView('list'));
+    }
+
+    if (mapViewBtn) {
+        mapViewBtn.addEventListener('click', () => switchView('map'));
+    }
+
+    // Add booking event listeners
+    if (bookPropertyBtn) {
+        bookPropertyBtn.addEventListener('click', () => {
+            if (currentBookingProperty) {
+                openBookingModal(currentBookingProperty);
+            }
+        });
+    }
+
+    if (bookingFormEl) {
+        bookingFormEl.addEventListener('submit', handleBookingSubmit);
+    }
+
+    // Add event delegation for booking buttons on cards
+    if (cardsEl) {
+        cardsEl.addEventListener('click', (e) => {
+            const bookBtn = e.target.closest('[data-book-property]');
+            if (bookBtn) {
+                e.stopPropagation();
+                const propertyId = bookBtn.getAttribute('data-book-property');
+                const property = properties.find(p => p.id === propertyId);
+                if (property) {
+                    openBookingModal(property);
+                }
+            }
+        });
+    }
+
+    // Update openDetailModal to set currentBookingProperty
+    const originalOpenDetailModal = openDetailModal;
+    openDetailModal = function(p) {
+        currentBookingProperty = p;
+        originalOpenDetailModal(p);
+    };
 
     // Initialize
     populateCountries();

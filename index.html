@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,57 +28,118 @@
 
     <main class="container">
         <section class="filters" aria-label="Filter properties">
-            <!-- Country removed per requirements -->
-            <div class="filter-group">
-                <!-- State/Region removed per requirements -->
+            <div class="filters-header">
+                <h2>Find Your Perfect Property</h2>
+                <p>Use the filters below to narrow down your search</p>
             </div>
-            <!-- City removed per requirements -->
-            <div class="filter-group search">
-                <label for="searchInput">Search</label>
-                <input id="searchInput" type="search" placeholder="Search by name or address">
-            </div>
-            <div class="filter-group">
-                <label>Price range (KSh)</label>
-                <div class="price-row">
-                    <input id="priceMin" type="number" min="4000" max="19000" step="100" placeholder="Min (≥4000)">
-                    <span class="sep">–</span>
-                    <input id="priceMax" type="number" min="4000" max="19000" step="100" placeholder="Max (≤19000)">
+            
+            <div class="filters-content">
+                <!-- Search Section -->
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">🔍</span>
+                        <h3>Search</h3>
+                    </div>
+                    <div class="filter-group search">
+                        <input id="searchInput" type="search" placeholder="Search by property name or address...">
+                    </div>
                 </div>
-            </div>
-            <div class="filter-group rating-group">
-                <label for="ratingSelect">Minimum rating</label>
-                <select id="ratingSelect">
-                    <option value="0">Any</option>
-                    <option value="4.5">4.5+</option>
-                    <option value="4">4.0+</option>
-                    <option value="3.5">3.5+</option>
-                    <option value="3">3.0+</option>
-                </select>
-            </div>
-            <div class="filter-group amenities-group">
-                <label>Amenities</label>
-                <div id="amenitiesWrap" class="amenities"></div>
-            </div>
-            <div class="filter-actions">
-                <button id="clearFilters" class="btn secondary" type="button">Clear filters</button>
+
+                <!-- Price Section -->
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">💰</span>
+                        <h3>Price Range</h3>
+                    </div>
+                    <div class="filter-group">
+                        <label>Monthly Rent (KSh)</label>
+                        <div class="price-row">
+                            <div class="price-input-group">
+                                <label for="priceMin" class="price-label">Min</label>
+                                <input id="priceMin" type="number" min="4000" max="19000" step="100" placeholder="4,000">
+                            </div>
+                            <span class="price-separator">to</span>
+                            <div class="price-input-group">
+                                <label for="priceMax" class="price-label">Max</label>
+                                <input id="priceMax" type="number" min="4000" max="19000" step="100" placeholder="19,000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Section -->
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">⭐</span>
+                        <h3>Rating</h3>
+                    </div>
+                    <div class="filter-group">
+                        <label for="ratingSelect">Minimum Rating</label>
+                        <select id="ratingSelect">
+                            <option value="0">Any Rating</option>
+                            <option value="4.5">4.5+ Stars</option>
+                            <option value="4">4.0+ Stars</option>
+                            <option value="3.5">3.5+ Stars</option>
+                            <option value="3">3.0+ Stars</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Amenities Section -->
+                <div class="filter-section amenities-section">
+                    <div class="section-header">
+                        <span class="section-icon">🏠</span>
+                        <h3>Amenities</h3>
+                    </div>
+                    <div class="filter-group">
+                        <label>Select Amenities</label>
+                        <div id="amenitiesWrap" class="amenities"></div>
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="filter-actions">
+                    <button id="clearFilters" class="btn secondary" type="button">
+                        <span class="btn-icon">🗑️</span>
+                        Clear All Filters
+                    </button>
+                </div>
             </div>
         </section>
 
         <section>
             <div class="results-bar">
                 <div id="resultsCount">0 results</div>
-                <div class="sort">
-                    <label for="sortSelect">Sort</label>
-                    <select id="sortSelect">
-                        <option value="relevance">Relevance</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="name-asc">Name: A to Z</option>
-                        <option value="name-desc">Name: Z to A</option>
-                    </select>
+                <div class="view-controls">
+                    <div class="view-toggle">
+                        <button id="listViewBtn" class="view-btn active" data-view="list">
+                            <span class="icon">📋</span> List
+                        </button>
+                        <button id="mapViewBtn" class="view-btn" data-view="map">
+                            <span class="icon">🗺️</span> Map
+                        </button>
+                    </div>
+                    <div class="sort">
+                        <label for="sortSelect">Sort</label>
+                        <select id="sortSelect">
+                            <option value="relevance">Relevance</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                            <option value="name-asc">Name: A to Z</option>
+                            <option value="name-desc">Name: Z to A</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div id="cards" class="cards" aria-live="polite"></div>
+            <div id="listingsContainer" class="listings-container">
+                <div id="cards" class="cards" aria-live="polite"></div>
+                <div id="mapContainer" class="map-container" style="display: none;">
+                    <div id="map" class="map"></div>
+                    <div class="map-info">
+                        <p>📍 Click on markers to view property details</p>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -103,11 +165,86 @@
                     <div id="modalPrice" class="price"></div>
                     <div id="modalAmenities" class="chips"></div>
                     <p id="modalDesc"></p>
+                    <div class="modal-actions">
+                        <button id="bookPropertyBtn" class="btn primary">Book This Property</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-backdrop" data-close></div>
+        <div class="modal-dialog booking-dialog" role="document">
+            <button class="modal-close" type="button" data-close aria-label="Close">×</button>
+            <div class="modal-content">
+                <div class="booking-header">
+                    <h2>Book Property</h2>
+                    <div id="bookingPropertyInfo" class="booking-property-info"></div>
+                </div>
+                <form id="bookingForm" class="booking-form">
+                    <div class="form-group">
+                        <label for="guestName">Full Name *</label>
+                        <input type="text" id="guestName" name="guestName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guestEmail">Email Address *</label>
+                        <input type="email" id="guestEmail" name="guestEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="guestPhone">Phone Number *</label>
+                        <input type="tel" id="guestPhone" name="guestPhone" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="checkIn">Check-in Date *</label>
+                            <input type="date" id="checkIn" name="checkIn" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="checkOut">Check-out Date *</label>
+                            <input type="date" id="checkOut" name="checkOut" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="guests">Number of Guests *</label>
+                        <select id="guests" name="guests" required>
+                            <option value="">Select guests</option>
+                            <option value="1">1 Guest</option>
+                            <option value="2">2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4 Guests</option>
+                            <option value="5">5+ Guests</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialRequests">Special Requests</label>
+                        <textarea id="specialRequests" name="specialRequests" rows="3" placeholder="Any special requirements or requests..."></textarea>
+                    </div>
+                    <div class="booking-summary">
+                        <div class="summary-row">
+                            <span>Property:</span>
+                            <span id="summaryPropertyName"></span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Price per month:</span>
+                            <span id="summaryPrice"></span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total (estimated):</span>
+                            <span id="summaryTotal"></span>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary" data-close>Cancel</button>
+                        <button type="submit" class="btn primary">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
