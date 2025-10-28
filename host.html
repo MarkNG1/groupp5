@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header class="site-header">
         <div class="container">
@@ -17,38 +19,243 @@
                 <h1 class="title">Host Dashboard</h1>
             </div>
             <nav class="nav">
-                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html" class="nav-link">Properties</a>
+                <a href="#" class="nav-link" onclick="showAbout()">About</a>
             </nav>
         </div>
     </header>
 
-    <main class="container" style="margin:24px 0 48px;">
+    <main class="host-main">
+        <section class="filters host-section">
+            <div class="filters-header">
+                <h2>Add New Property</h2>
+                <p>Fill in the details to list your property</p>
+            </div>
+
+            <form id="addPropertyForm" class="filters-content">
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">🏠</span>
+                        <h3>Basic Information</h3>
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyName">Property Name *</label>
+                        <input type="text" id="propertyName" name="name" required
+                            placeholder="e.g. Green Valley Apartments">
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyAddress">Address *</label>
+                        <input type="text" id="propertyAddress" name="address" required
+                            placeholder="e.g. 123 Valley Road, Murang'a">
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyDescription">Description</label>
+                        <textarea id="propertyDescription" name="description" rows="3"
+                            placeholder="Describe your property..."></textarea>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">💰</span>
+                        <h3>Pricing & Details</h3>
+                    </div>
+                    <div class="price-row">
+                        <div class="filter-group">
+                            <label for="propertyPrice">Monthly Rent (KSh) *</label>
+                            <input type="number" id="propertyPrice" name="price" required min="1000" step="100"
+                                placeholder="8500">
+                        </div>
+                        <div class="filter-group">
+                            <label for="propertyBeds">Bedrooms *</label>
+                            <input type="number" id="propertyBeds" name="beds" required min="1" max="10"
+                                placeholder="2">
+                        </div>
+                        <div class="filter-group">
+                            <label for="propertyBaths">Bathrooms *</label>
+                            <input type="number" id="propertyBaths" name="baths" required min="1" max="10"
+                                placeholder="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">📍</span>
+                        <h3>Location</h3>
+                    </div>
+                    <div class="price-row location-row"></div>
+                    <div class="filter-group">
+                        <label for="propertyLat">Latitude</label>
+                        <input type="number" id="propertyLat" name="latitude" step="0.000001" placeholder="-0.7200">
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyLng">Longitude</label>
+                        <input type="number" id="propertyLng" name="longitude" step="0.000001" placeholder="37.1500">
+                    </div>
+                </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="section-header">
+                        <span class="section-icon">🖼️</span>
+                        <h3>Images</h3>
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyThumbnail">Main Image URL</label>
+                        <input type="url" id="propertyThumbnail" name="thumbnail"
+                            placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div class="filter-group">
+                        <label for="propertyPhotos">Additional Photos (one per line)</label>
+                        <textarea id="propertyPhotos" name="photos" rows="3"
+                            placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg"></textarea>
+                    </div>
+                </div>
+
+                <div class="filter-section amenities-section">
+                    <div class="section-header">
+                        <span class="section-icon">✨</span>
+                        <h3>Amenities</h3>
+                    </div>
+                    <div class="filter-group">
+                        <div class="amenities">
+                            <label class="chip"><input type="checkbox" value="Wi‑Fi"><span>Wi‑Fi</span></label>
+                            <label class="chip"><input type="checkbox" value="Parking"><span>Parking</span></label>
+                            <label class="chip"><input type="checkbox" value="Kitchen"><span>Kitchen</span></label>
+                            <label class="chip"><input type="checkbox" value="Laundry"><span>Laundry</span></label>
+                            <label class="chip"><input type="checkbox" value="Security"><span>Security</span></label>
+                            <label class="chip"><input type="checkbox" value="CCTV"><span>CCTV</span></label>
+                            <label class="chip"><input type="checkbox" value="Gym"><span>Gym</span></label>
+                            <label class="chip"><input type="checkbox" value="Swimming Pool"><span>Swimming
+                                    Pool</span></label>
+                            <label class="chip"><input type="checkbox" value="Garden"><span>Garden</span></label>
+                            <label class="chip"><input type="checkbox" value="Balcony"><span>Balcony</span></label>
+                            <label class="chip"><input type="checkbox" value="Study Area"><span>Study
+                                    Area</span></label>
+                            <label class="chip"><input type="checkbox" value="Common Room"><span>Common
+                                    Room</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn primary">
+                        <span class="btn-icon">➕</span>
+                        Add Property
+                    </button>
+                    <button type="reset" class="btn secondary">
+                        <span class="btn-icon">🗑️</span>
+                        Clear Form
+                    </button>
+                </div>
+            </form>
+        </section>
+
         <section class="cards">
-            <article class="card">
+            <article class="card" onclick="window.location.href='manage_listings.html'" style="cursor: pointer;">
                 <div class="body">
                     <div class="name">Your Listings</div>
                     <div class="meta">Create, edit, and manage availability.</div>
                     <div class="chips">
-                        <span class="chip-badge">Add listing</span>
-                        <span class="chip-badge">Sync calendar</span>
-                        <span class="chip-badge">Bulk pricing</span>
+                        <span class="chip-badge">Manage properties</span>
+                        <span class="chip-badge">View statistics</span>
+                        <span class="chip-badge">Edit details</span>
                     </div>
                 </div>
             </article>
-            <article class="card">
+            <article class="card" onclick="window.location.href='view_bookings.php'" style="cursor: pointer;">
                 <div class="body">
                     <div class="name">Bookings</div>
                     <div class="meta">View upcoming and past bookings, respond to requests.</div>
+                    <div class="chips">
+                        <span class="chip-badge">View all bookings</span>
+                        <span class="chip-badge">Manage requests</span>
+                    </div>
                 </div>
             </article>
-            <article class="card">
+            <article class="card" onclick="window.location.href='insights.html'" style="cursor: pointer;">
                 <div class="body">
                     <div class="name">Insights</div>
                     <div class="meta">Track views, conversion, and revenue trends.</div>
+                    <div class="chips"></div>
+                    <span class="chip-badge">Analytics</span>
+                    <span class="chip-badge">Performance</span>
+                    <span class="chip-badge">Revenue tracking</span>
+                </div>
                 </div>
             </article>
-        </section>
+        </section>span>
     </main>
 </body>
+
 </html>
 
+<script>
+    // Host dashboard functionality
+    document.getElementById('addPropertyForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {};
+
+        // Get form data
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+
+        // Get selected amenities
+        const amenities = Array.from(document.querySelectorAll('.amenities input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        data.amenities = amenities;
+
+        // Process photos (split by newlines)
+        const photosText = data.photos || '';
+        data.photos = photosText.split('\n').filter(url => url.trim()).map(url => url.trim());
+
+        // Convert numbers
+        data.price = parseFloat(data.price);
+        data.beds = parseInt(data.beds);
+        data.baths = parseInt(data.baths);
+        if (data.latitude) data.latitude = parseFloat(data.latitude);
+        if (data.longitude) data.longitude = parseFloat(data.longitude);
+
+        try {
+            const response = await fetch('add_property.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Property added successfully!');
+                this.reset();
+            } else {
+                alert('Error: ' + (result.error || 'Failed to add property'));
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    });
+</script> 
+   // Navigation helper functions
+    function showAbout() {
+        alert(`About Murang'a Properties
+
+A student-built platform connecting the Murang'a University community with quality accommodation options.
+
+Features:
+• Browse properties near campus
+• Interactive map view
+• Easy booking system
+• Host dashboard for property owners
+
+Built as a learning project to help students find housing.`);
+    }
+</script>
+</body>
+</html>

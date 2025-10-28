@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Listings • Murang'a Properties</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">🏢</div>
+                <h1 class="title">Manage Listings</h1>
+            </div>
+            <nav class="nav">
+                <a href="host.html" class="nav-link">← Dashboard</a>
+                <a href="index.html" class="nav-link">Properties</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="host-main">
+        <section class="filters host-section">
+            <div class="filters-header">
+                <h2>Your Property Listings</h2>
+                <p>Manage your properties, view booking statistics, and update details</p>
+            </div>
+            
+            <div class="filter-actions" style="margin-bottom: 24px;">
+                <button onclick="window.location.href='host.html'" class="btn primary">
+                    <span class="btn-icon">➕</span>
+                    Add New Property
+                </button>
+            </div>
+        </section>
+
+        <section id="listingsSection">
+            <div id="loadingMessage" class="loading-message">
+                <p>Loading your listings...</p>
+            </div>
+            <div id="listingsGrid" class="cards" style="display: none;"></div>
+            <div id="noListings" class="no-listings" style="display: none;">
+                <h3>No properties listed yet</h3>
+                <p>Start by adding your first property to begin receiving bookings.</p>
+                <button onclick="window.location.href='host.html'" class="btn primary">Add Your First Property</button>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        .loading-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+        
+        .no-listings {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+        
+        .no-listings h3 {
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        
+        .listing-card {
+            position: relative;
+        }
+        
+        .listing-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--muted);
+        }
+        
+        .stat-item.pending {
+            color: #fbbf24;
+        }
+        
+        .stat-item.confirmed {
+            color: var(--accent);
+        }
+        
+        .listing-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .action-btn.delete:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+    </style>
+
+    <script>
+        async function loadListings() {
+            try {
+                const response = await fetch('get_host_listings.php');
+                const listings = await response.json();
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                if (listings.length === 0) {
+                    document.getElementById('noListings').style.display = 'block';
+                    return;
+                }
+                
+                const grid = document.getElementById('listingsGrid');
+                grid.style.display = 'grid';
+                grid.innerHTML = '';
+                
+                listings.forEach(listing => {
+                    const card = document.createElement('article');
+                    card.className = 'card listing-card';
+                    
+                    const lastBooking = listing.stats.last_booking 
+                        ? new Date(listing.stats.last_booking).toLocaleDateString()
+                        : 'No bookings yet';
+                    
+                    card.innerHTML = `
+                        <div class="listing-actions">
+                            <button class="action-btn" onclick="editListing('${listing.id}')" title="Edit">✏️</button>
+                            <button class="action-btn delete" onclick="deleteListing('${listing.id}', '${listing.name}')" title="Delete">🗑️</button>
+                        </div>
+                        <div class="media">
+                            ${listing.thumbnail ? `<img src="${listing.thumbnail}" alt="${listing.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">No image</div>'}
+                        </div>
+                        <div class="body">
+                            <div class="name">${listing.name}</div>
+                            <div class="meta">${listing.address}</div>
+                            <div class="meta details-row">
+                                <span class="price">KSh ${formatPrice(listing.price)}/mo</span>
+                                <span class="beds">${listing.beds} beds</span>
+                                <span class="baths">${listing.baths} baths</span>
+                            </div>
+                            <div class="listing-stats">
+                                <div class="stat-item">📊 ${listing.stats.total_bookings} total bookings</div>
+                                <div class="stat-item pending">⏳ ${listing.stats.pending_bookings} pending</div>
+                                <div class="stat-item confirmed">✅ ${listing.stats.confirmed_bookings} confirmed</div>
+                            </div>
+                            <div class="meta" style="margin-top: 8px; font-size: 12px;">
+                                Last booking: ${lastBooking}
+                            </div>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(card);
+                });
+                
+            } catch (error) {
+                document.getElementById('loadingMessage').innerHTML = '<p style="color: #dc2626;">Error loading listings: ' + error.message + '</p>';
+            }
+        }
+        
+        function formatPrice(num) {
+            return String(Math.round(Number(num) || 0));
+        }
+        
+        function editListing(propertyId) {
+            // For now, just show an alert. You can implement a full edit modal later
+            alert('Edit functionality coming soon! Property ID: ' + propertyId);
+        }
+        
+        async function deleteListing(propertyId, propertyName) {
+            if (!confirm(`Are you sure you want to delete "${propertyName}"? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('manage_property.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ property_id: propertyId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Property deleted successfully!');
+                    loadListings(); // Reload the listings
+                } else {
+                    alert('Error deleting property: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error deleting property: ' + error.message);
+            }
+        }
+        
+        // Load listings when page loads
+        loadListings();
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// Data is provided by data.js as window.PROPERTIES
+// Dynamic property loading from PHP backend
 (function () {
     const countrySelect = document.getElementById('countrySelect');
     const stateSelect = document.getElementById('stateSelect');
@@ -47,7 +47,34 @@
         yearEl.textContent = String(new Date().getFullYear());
     }
 
-    const properties = Array.isArray(window.PROPERTIES) ? window.PROPERTIES : [];
+    let properties = [];
+
+    // Load properties from backend - this took me forever to get working!
+    async function loadProperties() {
+        try {
+            const response = await fetch('get_properties.php');
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                properties = data;
+                populateCountries();
+                populateStates();
+                populateCities();
+                populateAmenities();
+                applyFiltersAndRender();
+            } else {
+                console.error('Failed to load properties:', data.error);
+            }
+        } catch (error) {
+            console.error('Error loading properties:', error);
+            // fallback to static data if backend fails - saved my life during development
+            properties = Array.isArray(window.PROPERTIES) ? window.PROPERTIES : [];
+            populateCountries();
+            populateStates();
+            populateCities();
+            populateAmenities();
+            applyFiltersAndRender();
+        }
+    }
 
     const getUniqueSorted = (arr) => Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
 
@@ -104,7 +131,7 @@
 
         const selectedCountry = countrySelect.value;
         const filtered = selectedCountry ? properties.filter(p => p.location.country === selectedCountry) : properties;
-        const states = getUniqueSorted(filtered.map(p => p.location.state));
+        const states = getUniqueSorted(filtered.map(p => p.location.state || p.location.city).filter(Boolean));
         for (const state of states) {
             const option = document.createElement('option');
             option.value = state;
@@ -122,7 +149,7 @@
         const selectedState = stateSelect ? stateSelect.value : '';
         let filtered = properties;
         if (selectedCountry) filtered = filtered.filter(p => p.location.country === selectedCountry);
-        if (selectedState) filtered = filtered.filter(p => p.location.state === selectedState);
+        if (selectedState) filtered = filtered.filter(p => (p.location.state || p.location.city) === selectedState);
         const cities = getUniqueSorted(filtered.map(p => p.location.city));
         for (const city of cities) {
             const option = document.createElement('option');
@@ -155,7 +182,7 @@
 
         let filtered = properties.filter(p => {
             const matchesCountry = !selectedCountry || p.location.country === selectedCountry;
-            const matchesState = !selectedState || p.location.state === selectedState;
+            const matchesState = !selectedState || (p.location.state || p.location.city) === selectedState;
             const matchesCity = !selectedCity || p.location.city === selectedCity;
             const matchesQuery = !query ||
                 p.name.toLowerCase().includes(query) ||
@@ -276,7 +303,7 @@
         if (!modalEl) return;
         modalEl.setAttribute('aria-hidden', 'false');
         modalTitleEl.textContent = p.name;
-        modalMetaEl.textContent = `${p.location.city}, ${p.location.state}, ${p.location.country} · ${p.address}`;
+        modalMetaEl.textContent = `${p.location.city}, ${p.location.country} · ${p.address}`;
         modalPriceEl.innerHTML = `<span class="price">KSh ${formatPrice(p.price)} / mo</span><span class="beds">${p.beds} beds</span><span class="baths">${p.baths} baths</span>${p.rating ? `<span class="rating">⭐ ${p.rating.toFixed(1)}</span>` : ''}`;
         modalDescEl.textContent = p.description || '';
         modalAmenitiesEl.innerHTML = '';
@@ -336,8 +363,22 @@
         
         // Set minimum date to today
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkIn').min = today;
-        document.getElementById('checkOut').min = today;
+        const checkInInput = document.getElementById('checkIn');
+        const checkOutInput = document.getElementById('checkOut');
+        
+        checkInInput.min = today;
+        checkOutInput.min = today;
+        
+        // Update check-out minimum when check-in changes
+        checkInInput.addEventListener('change', function() {
+            if (this.value) {
+                checkOutInput.min = this.value;
+                // Clear check-out if it's before the new check-in date
+                if (checkOutInput.value && checkOutInput.value <= this.value) {
+                    checkOutInput.value = '';
+                }
+            }
+        });
         
         // Reset form
         bookingFormEl.reset();
@@ -397,14 +438,8 @@
         const confirmed = confirm(`Confirm booking for ${currentBookingProperty.name}?\n\nGuest: ${bookingData.guestName}\nCheck-in: ${bookingData.checkIn}\nCheck-out: ${bookingData.checkOut}\nTotal: KSh ${formatPrice(totalCost)}`);
         
         if (confirmed) {
-            // In a real application, you would send this data to your backend
-            console.log('Booking submitted:', bookingData);
-            
-            // Show success message
-            alert('Booking request submitted successfully! We will contact you soon to confirm your reservation.');
-            
-            // Close modal
-            closeBookingModal();
+            // Submit booking to backend
+            submitBooking(bookingData);
         }
     }
 
@@ -587,11 +622,80 @@
         originalOpenDetailModal(p);
     };
 
-    // Initialize
-    populateCountries();
-    populateStates();
-    populateCities();
-    populateAmenities();
-    applyFiltersAndRender();
+    // Booking submission function
+    async function submitBooking(bookingData) {
+        try {
+            const response = await fetch('add_booking.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    property_id: bookingData.property.id,
+                    guest_name: bookingData.guestName,
+                    guest_email: bookingData.guestEmail,
+                    guest_phone: bookingData.guestPhone,
+                    check_in: bookingData.checkIn,
+                    check_out: bookingData.checkOut,
+                    guests: bookingData.guests,
+                    special_requests: bookingData.specialRequests
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Booking request submitted successfully! We will contact you soon to confirm your reservation.');
+                closeBookingModal();
+            } else {
+                alert('Error submitting booking: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Error submitting booking: ' + error.message);
+        }
+    }
+
+    // Initialize - load properties from backend
+    loadProperties();
 })();
+
+// Navigation helper functions
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+function showAbout() {
+    alert(`About Murang'a Properties
+
+A student-built platform connecting the Murang'a University community with quality accommodation options.
+
+Features:
+• Browse properties near campus
+• Interactive map view
+• Easy booking system
+• Host dashboard for property owners
+
+Built as a learning project to help students find housing.`);
+}
+
+function showContact() {
+    alert(`Contact Information
+
+📧 Email: info@murangaproperties.com
+📱 Phone: +254 700 000 000
+📍 Location: Murang'a University Area
+
+For property inquiries or technical support, feel free to reach out!`);
+}
+
+// Navigation helper functions
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
 

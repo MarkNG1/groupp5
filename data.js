@@ -3,8 +3,8 @@
 window.PROPERTIES = [
     {
         id: 'p-001',
-        name: 'University View Apartments',
-        address: '123 University Road, Murang\'a',
+        name: 'Green Valley Apartments',
+        address: '123 Valley Road, Murang\'a',
         price: 8500,
         beds: 2,
         baths: 1,
@@ -16,14 +16,14 @@ window.PROPERTIES = [
             'images/indoor/d1.jpeg',
             'images/indoor/d2.jpeg'
         ],
-        description: 'Modern apartments with stunning views of Murang\'a University campus. Perfect for students and young professionals.',
+        description: 'Modern apartments with stunning views of the surrounding hills. Perfect for students and young professionals.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7200, lng: 37.1500 }
     },
     {
         id: 'p-002',
-        name: 'Campus Heights Residences',
-        address: '45 College Street, Murang\'a',
+        name: 'Sunset Heights Residences',
+        address: '45 Sunset Street, Murang\'a',
         price: 12000,
         beds: 3,
         baths: 2,
@@ -35,14 +35,14 @@ window.PROPERTIES = [
             'images/indoor/d3.jpeg',
             'images/indoor/d4.jpeg'
         ],
-        description: 'Spacious family units within walking distance to Murang\'a University. Features modern amenities and secure environment.',
+        description: 'Spacious family units with beautiful sunset views. Features modern amenities and secure environment.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7185, lng: 37.1525 }
     },
     {
         id: 'p-003',
-        name: 'Student Haven Hostel',
-        address: '78 Campus Drive, Murang\'a',
+        name: 'The Scholar\'s Inn',
+        address: '78 Learning Drive, Murang\'a',
         price: 6500,
         beds: 1,
         baths: 1,
@@ -54,10 +54,10 @@ window.PROPERTIES = [
             'images/indoor/d5.jpeg',
             'images/indoor/d6.jpeg'
         ],
-        description: 'Budget-friendly accommodation for university students. Clean, safe, and conveniently located near campus.',
+        description: 'Budget-friendly accommodation designed for students. Clean, safe, and conveniently located.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7225, lng: 37.1475 }
-    },
+    }, 
     {
         id: 'p-004',
         name: 'Murang\'a Gardens Estate',
@@ -73,14 +73,14 @@ window.PROPERTIES = [
             'images/indoor/d7.jpeg',
             'images/indoor/d9.jpeg'
         ],
-        description: 'Luxury family homes in a gated community near Murang\'a University. Perfect for families and professionals.',
+        description: 'Luxury family homes in a gated community. Perfect for families and professionals seeking premium living.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7155, lng: 37.1555 }
     },
     {
         id: 'p-005',
-        name: 'Campus Corner Suites',
-        address: '92 University Lane, Murang\'a',
+        name: 'The Cornerstone Suites',
+        address: '92 Foundation Lane, Murang\'a',
         price: 9500,
         beds: 2,
         baths: 2,
@@ -92,14 +92,14 @@ window.PROPERTIES = [
             'images/indoor/d10.jpeg',
             'images/indoor/d1.jpeg'
         ],
-        description: 'Comfortable suites with kitchen facilities, ideal for students and young couples near the university.',
+        description: 'Comfortable suites with kitchen facilities, ideal for young couples and working professionals.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7255, lng: 37.1445 }
     },
     {
         id: 'p-006',
-        name: 'University Plaza Apartments',
-        address: '201 Campus Road, Murang\'a',
+        name: 'The Plaza Apartments',
+        address: '201 Central Road, Murang\'a',
         price: 11000,
         beds: 3,
         baths: 2,
@@ -111,14 +111,14 @@ window.PROPERTIES = [
             'images/indoor/d2.jpeg',
             'images/indoor/d3.jpeg'
         ],
-        description: 'Modern apartments with balcony views, perfect for university staff and graduate students.',
+        description: 'Modern apartments with balcony views, perfect for professionals and families.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7175, lng: 37.1535 }
     },
     {
         id: 'p-007',
-        name: 'Campus View Bungalows',
-        address: '34 University Heights, Murang\'a',
+        name: 'Hillcrest Bungalows',
+        address: '34 Hillcrest Heights, Murang\'a',
         price: 18000,
         beds: 4,
         baths: 3,
@@ -130,14 +130,14 @@ window.PROPERTIES = [
             'images/indoor/d4.jpeg',
             'images/indoor/d5.jpeg'
         ],
-        description: 'Spacious bungalows with private gardens, ideal for families and university faculty members.',
+        description: 'Spacious bungalows with private gardens, ideal for families seeking tranquility and space.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7195, lng: 37.1515 }
     },
     {
         id: 'p-008',
-        name: 'Student Lodge Murang\'a',
-        address: '67 Campus Street, Murang\'a',
+        name: 'The Learning Lodge',
+        address: '67 Knowledge Street, Murang\'a',
         price: 7500,
         beds: 1,
         baths: 1,
@@ -149,14 +149,14 @@ window.PROPERTIES = [
             'images/indoor/d6.jpeg',
             'images/indoor/d7.jpeg'
         ],
-        description: 'Affordable student accommodation with shared facilities and study areas, walking distance to university.',
+        description: 'Affordable accommodation with shared facilities and study areas, perfect for students.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7235, lng: 37.1465 }
     },
     {
         id: 'p-009',
-        name: 'University Manor',
-        address: '189 College Avenue, Murang\'a',
+        name: 'The Manor House',
+        address: '189 Heritage Avenue, Murang\'a',
         price: 13000,
         beds: 3,
         baths: 2,
@@ -168,7 +168,7 @@ window.PROPERTIES = [
             'images/indoor/d9.jpeg',
             'images/indoor/d10.jpeg'
         ],
-        description: 'Premium apartments with modern amenities, perfect for university staff and graduate students seeking comfort.',
+        description: 'Premium apartments with modern amenities, perfect for professionals seeking comfort and style.',
         location: { country: 'Kenya', city: 'Murang\'a' },
         coordinates: { lat: -0.7165, lng: 37.1545 }
     }
