@@ -132,7 +132,8 @@
     <script>
         async function loadListings() {
             try {
-                const response = await fetch('get_host_listings.php');
+                // Try Netlify function first, fallback to static data
+                let response = await fetch('/.netlify/functions/get-properties-fallback');
                 const listings = await response.json();
                 
                 document.getElementById('loadingMessage').style.display = 'none';

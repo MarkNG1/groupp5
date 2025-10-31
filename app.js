@@ -52,7 +52,12 @@
     // Load properties from serverless backend
     async function loadProperties() {
         try {
-            const response = await fetch('/.netlify/functions/get-properties');
+            // Try main function first, fallback if it fails
+            let response = await fetch('/.netlify/functions/get-properties');
+            if (!response.ok) {
+                console.log('Main function failed, trying fallback...');
+                response = await fetch('/.netlify/functions/get-properties-fallback');
+            }
             const data = await response.json();
             if (Array.isArray(data)) {
                 properties = data;

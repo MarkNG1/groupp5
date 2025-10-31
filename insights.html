@@ -189,8 +189,23 @@
     <script>
         async function loadInsights() {
             try {
-                const response = await fetch('get_insights.php');
-                const data = await response.json();
+                // Use static demo data for insights
+                const data = {
+                    total_properties: 5,
+                    total_bookings: 12,
+                    total_revenue: 45000,
+                    pending_bookings: 3,
+                    avg_property_price: 10300,
+                    bookings_this_month: 8,
+                    revenue_this_month: 28000,
+                    most_popular_property: 'Green Valley Apartments',
+                    most_popular_bookings: 4,
+                    booking_trend: [
+                        { date: '2024-01-01', count: 2 },
+                        { date: '2024-01-02', count: 1 },
+                        { date: '2024-01-03', count: 3 }
+                    ]
+                };
                 
                 document.getElementById('loadingMessage').style.display = 'none';
                 document.getElementById('statsGrid').style.display = 'grid';
