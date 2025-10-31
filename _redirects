@@ -1,6 +1,6 @@
 # Netlify redirects file
-/api/properties /.netlify/functions/get-properties 200
-/api/bookings /.netlify/functions/create-booking 200
+/api/properties /.netlify/functions/get-properties-fallback 200
+/api/bookings /.netlify/functions/create-booking-simple 200
 
 # Serve index.html for all routes (SPA fallback)
 /*    /index.html   200

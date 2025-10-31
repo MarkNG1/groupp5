@@ -630,7 +630,7 @@
     // Booking submission function
     async function submitBooking(bookingData) {
         try {
-            const response = await fetch('/.netlify/functions/create-booking', {
+            const response = await fetch('/.netlify/functions/create-booking-simple', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -650,13 +650,20 @@
             const result = await response.json();
             
             if (result.success) {
-                alert('Booking request submitted successfully! We will contact you soon to confirm your reservation.');
+                alert(`Booking request submitted successfully! 
+
+Booking ID: #${result.booking_id}
+Total Cost: KSh ${result.total_cost}
+
+We will contact you soon to confirm your reservation.`);
                 closeBookingModal();
             } else {
                 alert('Error submitting booking: ' + (result.error || 'Unknown error'));
+                console.error('Booking error details:', result);
             }
         } catch (error) {
             alert('Error submitting booking: ' + error.message);
+            console.error('Network error:', error);
         }
     }
 
