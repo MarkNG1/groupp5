@@ -5,6 +5,7 @@
 
 # Configuration files with sensitive data
 config_local.php
+.env
 
 # Logs
 *.log

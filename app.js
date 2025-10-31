@@ -49,10 +49,10 @@
 
     let properties = [];
 
-    // Load properties from backend - this took me forever to get working!
+    // Load properties from serverless backend
     async function loadProperties() {
         try {
-            const response = await fetch('get_properties.php');
+            const response = await fetch('/.netlify/functions/get-properties');
             const data = await response.json();
             if (Array.isArray(data)) {
                 properties = data;
@@ -625,7 +625,7 @@
     // Booking submission function
     async function submitBooking(bookingData) {
         try {
-            const response = await fetch('add_booking.php', {
+            const response = await fetch('/.netlify/functions/create-booking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,0 +1,19 @@
+{
+  "name": "muranga-properties",
+  "version": "1.0.0",
+  "description": "Property rental platform for Murang'a University area",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "keywords": ["property", "rental", "booking", "muranga", "university"],
+  "author": "Your Name",
+  "license": "MIT"
+}

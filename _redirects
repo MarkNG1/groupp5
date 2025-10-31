@@ -1,0 +1,3 @@
+# Netlify redirects file
+/api/properties /.netlify/functions/get-properties 200
+/api/bookings /.netlify/functions/create-booking 200
