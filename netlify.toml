@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Set index.html as the default page
+[build.processing]
+  skip_processing = false
+
+[build.processing.html]
+  pretty_urls = true
+
 [[redirects]]
   from = "/api/properties"
   to = "/.netlify/functions/get-properties"
@@ -15,12 +22,11 @@
   to = "/.netlify/functions/create-booking"
   status = 200
 
-# Fallback for SPA routing
+# Fallback for SPA routing - serve index.html for all routes
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = ["admin"]}
 
 # Security headers
 [[headers]]
