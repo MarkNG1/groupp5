@@ -35,14 +35,6 @@
                     <span class="btn-icon">➕</span>
                     Add New Property
                 </button>
-                <button onclick="toggleSelectMode()" class="btn secondary" id="selectModeBtn">
-                    <span class="btn-icon">☑️</span>
-                    Select Multiple
-                </button>
-                <button onclick="deleteSelected()" class="btn secondary" id="deleteSelectedBtn" style="display: none;">
-                    <span class="btn-icon">🗑️</span>
-                    Delete Selected
-                </button>
             </div>
         </section>
 
@@ -76,86 +68,12 @@
             color: var(--text);
             margin-bottom: 12px;
         }
-        
-        .listing-card {
-            position: relative;
-        }
-        
-        .listing-stats {
-            display: flex;
-            gap: 16px;
-            margin-top: 12px;
-            font-size: 13px;
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: var(--muted);
-        }
-        
-        .stat-item.pending {
-            color: #fbbf24;
-        }
-        
-        .stat-item.confirmed {
-            color: var(--accent);
-        }
-        
-        .listing-actions {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: rgba(0, 0, 0, 0.7);
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-        
-        .action-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.05);
-        }
-        
-        .action-btn.delete:hover {
-            background: #dc2626;
-            border-color: #dc2626;
-        }
-        
-        .action-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .listing-card {
-            transition: all 0.3s ease;
-        }
-        
-        .listing-card.deleting {
-            opacity: 0.5;
-            transform: scale(0.95);
-        }
     </style>
 
     <script>
         async function loadListings() {
             try {
-                // Try Netlify function first, fallback to static data
-                let response = await fetch('/.netlify/functions/get-properties-fallback');
+                const response = await fetch('/.netlify/functions/get-properties-fallback');
                 const listings = await response.json();
                 
                 document.getElementById('loadingMessage').style.display = 'none';
@@ -171,17 +89,9 @@
                 
                 listings.forEach(listing => {
                     const card = document.createElement('article');
-                    card.className = 'card listing-card';
-                    
-                    const lastBooking = listing.stats.last_booking 
-                        ? new Date(listing.stats.last_booking).toLocaleDateString()
-                        : 'No bookings yet';
+                    card.className = 'card';
                     
                     card.innerHTML = `
-                        <div class="listing-actions">
-                            <button class="action-btn" onclick="editListing('${listing.id}')" title="Edit">✏️</button>
-                            <button class="action-btn delete" onclick="deleteListing('${listing.id}', '${listing.name}')" title="Delete">🗑️</button>
-                        </div>
                         <div class="media">
                             ${listing.thumbnail ? `<img src="${listing.thumbnail}" alt="${listing.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);">No image</div>'}
                         </div>
@@ -192,14 +102,6 @@
                                 <span class="price">KSh ${formatPrice(listing.price)}/mo</span>
                                 <span class="beds">${listing.beds} beds</span>
                                 <span class="baths">${listing.baths} baths</span>
-                            </div>
-                            <div class="listing-stats">
-                                <div class="stat-item">📊 ${listing.stats.total_bookings} total bookings</div>
-                                <div class="stat-item pending">⏳ ${listing.stats.pending_bookings} pending</div>
-                                <div class="stat-item confirmed">✅ ${listing.stats.confirmed_bookings} confirmed</div>
-                            </div>
-                            <div class="meta" style="margin-top: 8px; font-size: 12px;">
-                                Last booking: ${lastBooking}
                             </div>
                         </div>
                     `;
@@ -216,172 +118,6 @@
             return String(Math.round(Number(num) || 0));
         }
         
-        function editListing(propertyId) {
-            // For now, just show an alert. You can implement a full edit modal later
-            alert('Edit functionality coming soon! Property ID: ' + propertyId);
-        }
-        
-        async function deleteListing(propertyId, propertyName) {
-            if (!confirm(`Are you sure you want to delete "${propertyName}"?\n\nThis action cannot be undone.`)) {
-                return;
-            }
-            
-            // Show loading state
-            const deleteBtn = document.querySelector(`[onclick*="${propertyId}"][onclick*="deleteListing"]`);
-            const originalText = deleteBtn.innerHTML;
-            deleteBtn.innerHTML = '⏳';
-            deleteBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/.netlify/functions/delete-property', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ property_id: propertyId })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Show success message
-                    alert(`✅ "${propertyName}" has been deleted successfully!`);
-                    
-                    // Remove the property card from the UI immediately
-                    const propertyCard = deleteBtn.closest('.card');
-                    propertyCard.style.opacity = '0.5';
-                    propertyCard.style.transform = 'scale(0.95)';
-                    
-                    setTimeout(() => {
-                        propertyCard.remove();
-                        // Update the count if needed
-                        const remainingCards = document.querySelectorAll('.listing-card').length;
-                        if (remainingCards === 0) {
-                            document.getElementById('noListings').style.display = 'block';
-                            document.getElementById('listingsGrid').style.display = 'none';
-                        }
-                    }, 300);
-                    
-                } else {
-                    alert('❌ Error deleting property: ' + (result.error || 'Unknown error'));
-                    // Restore button
-                    deleteBtn.innerHTML = originalText;
-                    deleteBtn.disabled = false;
-                }
-            } catch (error) {
-                alert('❌ Network error: ' + error.message);
-                // Restore button
-                deleteBtn.innerHTML = originalText;
-                deleteBtn.disabled = false;
-            }
-        }
-        
-        // Bulk delete functionality
-        let selectMode = false;
-        let selectedProperties = new Set();
-        
-        function toggleSelectMode() {
-            selectMode = !selectMode;
-            const selectBtn = document.getElementById('selectModeBtn');
-            const deleteBtn = document.getElementById('deleteSelectedBtn');
-            
-            if (selectMode) {
-                selectBtn.innerHTML = '<span class="btn-icon">❌</span> Cancel Selection';
-                deleteBtn.style.display = 'inline-block';
-                // Add checkboxes to all cards
-                document.querySelectorAll('.listing-card').forEach(card => {
-                    if (!card.querySelector('.property-checkbox')) {
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.className = 'property-checkbox';
-                        checkbox.style.cssText = 'position: absolute; top: 10px; left: 10px; z-index: 10; transform: scale(1.5);';
-                        checkbox.addEventListener('change', function() {
-                            const propertyId = this.closest('.listing-card').querySelector('[onclick*="deleteListing"]').getAttribute('onclick').match(/'([^']+)'/)[1];
-                            if (this.checked) {
-                                selectedProperties.add(propertyId);
-                            } else {
-                                selectedProperties.delete(propertyId);
-                            }
-                            updateDeleteButton();
-                        });
-                        card.style.position = 'relative';
-                        card.appendChild(checkbox);
-                    }
-                });
-            } else {
-                selectBtn.innerHTML = '<span class="btn-icon">☑️</span> Select Multiple';
-                deleteBtn.style.display = 'none';
-                // Remove checkboxes
-                document.querySelectorAll('.property-checkbox').forEach(cb => cb.remove());
-                selectedProperties.clear();
-            }
-        }
-        
-        function updateDeleteButton() {
-            const deleteBtn = document.getElementById('deleteSelectedBtn');
-            const count = selectedProperties.size;
-            if (count > 0) {
-                deleteBtn.innerHTML = `<span class="btn-icon">🗑️</span> Delete Selected (${count})`;
-                deleteBtn.disabled = false;
-            } else {
-                deleteBtn.innerHTML = '<span class="btn-icon">🗑️</span> Delete Selected';
-                deleteBtn.disabled = true;
-            }
-        }
-        
-        async function deleteSelected() {
-            if (selectedProperties.size === 0) {
-                alert('Please select properties to delete');
-                return;
-            }
-            
-            const count = selectedProperties.size;
-            if (!confirm(`Are you sure you want to delete ${count} selected properties?\n\nThis action cannot be undone.`)) {
-                return;
-            }
-            
-            const deleteBtn = document.getElementById('deleteSelectedBtn');
-            deleteBtn.innerHTML = '<span class="btn-icon">⏳</span> Deleting...';
-            deleteBtn.disabled = true;
-            
-            let successCount = 0;
-            let errorCount = 0;
-            
-            for (const propertyId of selectedProperties) {
-                try {
-                    const response = await fetch('/.netlify/functions/delete-property', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ property_id: propertyId })
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success) {
-                        successCount++;
-                        // Remove card from UI
-                        const card = document.querySelector(`[onclick*="${propertyId}"]`).closest('.listing-card');
-                        card.remove();
-                    } else {
-                        errorCount++;
-                    }
-                } catch (error) {
-                    errorCount++;
-                }
-            }
-            
-            alert(`Bulk delete completed:\n✅ ${successCount} properties deleted\n❌ ${errorCount} errors`);
-            
-            // Reset selection mode
-            toggleSelectMode();
-            selectedProperties.clear();
-            
-            // Check if no properties left
-            if (document.querySelectorAll('.listing-card').length === 0) {
-                document.getElementById('noListings').style.display = 'block';
-                document.getElementById('listingsGrid').style.display = 'none';
-            }
-        }
-
         // Load listings when page loads
         loadListings();
     </script>
