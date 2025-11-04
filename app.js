@@ -680,27 +680,11 @@ function scrollToTop() {
 }
 
 function showAbout() {
-    alert(`About Murang'a Properties
-
-A student-built platform connecting the Murang'a University community with quality accommodation options.
-
-Features:
-• Browse properties near campus
-• Interactive map view
-• Easy booking system
-• Host dashboard for property owners
-
-Built as a learning project to help students find housing.`);
+    alert('About Murang\'a Properties\n\nA student-built platform connecting the Murang\'a University community with quality accommodation options.\n\nFeatures:\n- Browse properties near campus\n- Interactive map view\n- Easy booking system\n- Host dashboard for property owners\n\nBuilt as a learning project to help students find housing.');
 }
 
 function showContact() {
-    alert(`Contact Information
-
-📧 Email: info@murangaproperties.com
-📱 Phone: +254 700 000 000
-📍 Location: Murang'a University Area
-
-For property inquiries or technical support, feel free to reach out!`);
+    alert('Contact Information\n\nEmail: info@murangaproperties.com\nPhone: +254 700 000 000\nLocation: Murang\'a University Area\n\nFor property inquiries or technical support, feel free to reach out!');
 }
 
 // Navigation helper functions
